@@ -25,9 +25,7 @@ const loginSchema = z.object({
   }).max(30, {
     message: 'Username must not exceed 30 characters.',
   }),
-  password: z.string().min(6, {
-    message: 'Password must be at least 6 characters.',
-  }),
+  password: z.string()
 })
 
 type LoginFormValues = z.infer<typeof loginSchema>

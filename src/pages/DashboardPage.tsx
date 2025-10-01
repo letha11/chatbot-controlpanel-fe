@@ -1,12 +1,14 @@
 import { useMemo } from 'react'
-import { useGetDivisionsQuery, useGetDocumentsQuery } from '@/store/api'
+import { useGetDivisionsQuery, useGetDocumentsQuery, useGetUsersQuery } from '@/store/api'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
 export default function DashboardPage() {
   const { data: divisionsResp, isLoading: isDivisionsLoading } = useGetDivisionsQuery()
   const { data: documentsResp, isLoading: isDocumentsLoading } = useGetDocumentsQuery()
+  const { data: usersResp, isLoading: isUsersLoading } = useGetUsersQuery()
 
+  const users = usersResp?.data ?? []
   const divisions = divisionsResp?.data ?? []
   
   const { totalDocuments, activeDocuments, inactiveDocuments, byStatus } = useMemo(() => {
@@ -23,7 +25,7 @@ export default function DashboardPage() {
     return { totalDocuments, activeDocuments, inactiveDocuments, byStatus }
   }, [documentsResp?.data])
 
-  const isLoading = isDivisionsLoading || isDocumentsLoading
+  const isLoading = isDivisionsLoading || isDocumentsLoading || isUsersLoading
 
   return (
     <div className="space-y-6">
@@ -31,6 +33,15 @@ export default function DashboardPage() {
 
       {/* Top-level metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm text-muted-foreground">Users</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-semibold">{isLoading ? '—' : users.length}</div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle className="text-sm text-muted-foreground">Divisions</CardTitle>

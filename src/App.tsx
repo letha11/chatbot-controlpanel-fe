@@ -7,6 +7,7 @@ import DocumentsPage from '@/pages/DocumentsPage'
 import ChatPage from '@/pages/ChatPage'
 import PrivateRoute from '@/components/PrivateRoute'
 import Layout from '@/components/Layout'
+import UserPage from '@/pages/UserPage'
 
 function App() {
   return (
@@ -23,6 +24,16 @@ function App() {
               <PrivateRoute>
                 <Layout>
                   <DashboardPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/users"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <UserPage />
                 </Layout>
               </PrivateRoute>
             }

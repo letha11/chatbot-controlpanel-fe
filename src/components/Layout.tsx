@@ -38,7 +38,7 @@ export default function Layout({ children }: LayoutProps) {
             <div className="flex items-center space-x-4">
               {user && (
                 <span className="text-sm text-muted-foreground">
-                  Welcome, <span className="font-medium text-foreground">{user.username}</span>
+                  Welcome, <span className="font-medium text-foreground">{user.name}</span>
                 </span>
               )}
               <Button
@@ -71,6 +71,21 @@ export default function Layout({ children }: LayoutProps) {
                   Dashboard
                 </Link>
               </li>
+              {user?.role === 'super_admin' && (
+                <li>
+                  <Link
+                    to="/users"
+                    className={cn(
+                      "block px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                      location.pathname === "/users"
+                        ? "bg-primary text-primary-foreground"
+                        : "text-foreground hover:bg-accent hover:text-accent-foreground"
+                    )}
+                  >
+                    Users
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link
                   to="/divisions"

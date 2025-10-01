@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import type { LoginRequest, LoginResponse, ApiResponse } from '@/types/auth'
+import type { LoginRequest, LoginResponse, ApiResponse, User } from '@/types/auth'
 import type { Division, DocumentItem, ChatResponseData } from '@/types/entities'
 
 // Base URL for the API - you can configure this via environment variables
@@ -43,6 +43,35 @@ export const api = createApi({
     getCurrentUser: builder.query<ApiResponse, void>({
       query: () => '/api/v1/auth/me',
       providesTags: ['User'],
+    }),
+
+    // User CRUD operations
+    getUsers: builder.query<ApiResponse<User[]>, void>({
+      query: () => '/api/v1/users',
+      providesTags: ['User'],
+    }),
+    createUser: builder.mutation<ApiResponse<User>, Omit<User, 'id' | 'created_at' | 'updated_at'>>({
+      query: (newUser) => ({
+        url: '/api/v1/users',
+        method: 'POST',
+        body: newUser,
+      }),
+      invalidatesTags: ['User'],
+    }),
+    updateUser: builder.mutation<ApiResponse<User>, { id: string; data: Partial<Omit<User, 'id' | 'created_at' | 'updated_at'>> }>({
+      query: ({ id, data }) => ({
+        url: `/api/v1/users/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['User'],
+    }),
+    deleteUser: builder.mutation<ApiResponse, string>({
+      query: (id) => ({
+        url: `/api/v1/users/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['User'],
     }),
 
     // Divisions
@@ -155,4 +184,8 @@ export const {
   useToggleDocumentActiveMutation,
   useDeleteDocumentMutation,
   useSendChatMessageMutation,
+  useGetUsersQuery,
+  useCreateUserMutation,
+  useUpdateUserMutation,
+  useDeleteUserMutation,
 } = api
