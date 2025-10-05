@@ -1,7 +1,6 @@
-import dotenv from 'dotenv'
-
-dotenv.config()
-
 export const config = {
-  internalApiKey: process.env.INTERNAL_API_KEY || '',
+  internalApiKey: import.meta.env.VITE_INTERNAL_API_KEY || '',
+
+  // Features
+  division_enabled: import.meta.env.VITE_DIVISION_ENABLED || false,
 }

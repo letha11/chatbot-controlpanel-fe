@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useGetDivisionsQuery, useGetDocumentsQuery, useGetUsersQuery } from '@/store/api'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { config } from '@/lib/environment'
 
 export default function DashboardPage() {
   const { data: divisionsResp, isLoading: isDivisionsLoading } = useGetDivisionsQuery()
@@ -42,15 +43,16 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm text-muted-foreground">Divisions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-semibold">{isLoading ? '—' : divisions.length}</div>
-          </CardContent>
-        </Card>
-
+        {config.division_enabled && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm text-muted-foreground">Divisions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-semibold">{isLoading ? '—' : divisions.length}</div>
+            </CardContent>
+          </Card>
+        )}
         <Card>
           <CardHeader>
             <CardTitle className="text-sm text-muted-foreground">Documents (Total)</CardTitle>

@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import type { LoginRequest, LoginResponse, ApiResponse, User } from '@/types/auth'
 import type { Division, DocumentItem, ChatResponseData, Conversation, ConversationHistory, ChatRequest } from '@/types/entities'
+import { config } from '@/lib/environment'
 
 // Base URL for the API - you can configure this via environment variables
 const API_BASE_URL = 'http://localhost:3000'
@@ -76,7 +77,7 @@ export const api = createApi({
 
     // Divisions
     getDivisions: builder.query<ApiResponse<Division[]>, void>({
-      query: () => '/api/v1/divisions',
+      query: () => (config.division_enabled ? '/api/v1/divisions' : '/api/v1/divisions/default'),
       providesTags: ['Division'],
     }),
 
@@ -120,12 +121,14 @@ export const api = createApi({
     // Upload a new document (multipart/form-data)
     uploadDocument: builder.mutation<
       ApiResponse<DocumentItem>,
-      { file: File; division_id: string }
+      { file: File; division_id?: string }
     >({
       query: ({ file, division_id }) => {
         const formData = new FormData()
         formData.append('file', file)
-        formData.append('division_id', division_id)
+        if (config.division_enabled) {
+          formData.append('division_id', division_id || '')
+        }
         return {
           url: '/api/v1/documents/upload',
           method: 'POST',
@@ -162,11 +165,17 @@ export const api = createApi({
       ApiResponse<ChatResponseData>,
       ChatRequest
     >({
-      query: ({ division_id, query, conversation_id }) => ({
-        url: '/api/v1/chat',
-        method: 'POST',
-        body: { division_id, query, conversation_id },
-      }),
+      query: ({ division_id, query, conversation_id }) => {
+        const body: { query: string; conversation_id?: string; division_id?: string } = { query, conversation_id }
+        if (config.division_enabled) {
+          body.division_id = division_id
+        }
+
+        return {
+          url: '/api/v1/chat',
+          method: 'POST',
+          body,
+        }},
       invalidatesTags: ['Chat', 'Conversation'],
     }),
 

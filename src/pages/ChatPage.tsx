@@ -23,6 +23,7 @@ import {
 import type { Division, Conversation, ChatMessage } from '@/types/entities'
 import { toast } from 'sonner'
 import { Send, Plus, MessageSquare } from 'lucide-react'
+import { config } from '@/lib/environment'
 
 export default function ChatPage() {
   const dispatch = useAppDispatch()
@@ -240,6 +241,7 @@ export default function ChatPage() {
 
         {/* Chat Area */}
         <div className="lg:col-span-3 space-y-4">
+          {config.division_enabled && ( 
           <Card>
             <CardHeader>
               <CardTitle>Settings</CardTitle>
@@ -270,6 +272,7 @@ export default function ChatPage() {
               </div>
             </CardContent>
           </Card>
+          )}
 
           <Card>
             <CardHeader>

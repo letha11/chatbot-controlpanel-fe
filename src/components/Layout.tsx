@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { logout } from '@/store/authSlice'
 import { cn } from '@/lib/utils'
+import { config } from '@/lib/environment'
 
 interface LayoutProps {
   children: ReactNode
@@ -86,19 +87,21 @@ export default function Layout({ children }: LayoutProps) {
                   </Link>
                 </li>
               )}
-              <li>
-                <Link
-                  to="/divisions"
-                  className={cn(
-                    "block px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                    location.pathname === "/divisions"
-                      ? "bg-primary text-primary-foreground"
-                      : "text-foreground hover:bg-accent hover:text-accent-foreground"
-                  )}
-                >
-                  Divisions
-                </Link>
-              </li>
+              {config.division_enabled && (
+                <li>
+                  <Link
+                    to="/divisions"
+                    className={cn(
+                      "block px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                      location.pathname === "/divisions"
+                        ? "bg-primary text-primary-foreground"
+                        : "text-foreground hover:bg-accent hover:text-accent-foreground"
+                    )}
+                  >
+                    Divisions
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link
                   to="/documents"

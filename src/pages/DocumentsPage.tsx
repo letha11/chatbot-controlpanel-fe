@@ -17,6 +17,7 @@ import { MoreHorizontal, Upload, Trash2, Power } from 'lucide-react'
 
 import { useGetDivisionsQuery, useGetDocumentsQuery, useUploadDocumentMutation, useToggleDocumentActiveMutation, useDeleteDocumentMutation } from '@/store/api'
 import type { Division, DocumentItem } from '@/types/entities'
+import { config } from '@/lib/environment'
 
 export default function DocumentsPage() {
   const { data: divisionsResp } = useGetDivisionsQuery()
@@ -38,12 +39,27 @@ export default function DocumentsPage() {
   const [toggleActive, { isLoading: isToggling }] = useToggleDocumentActiveMutation()
   const [deleteDocument, { isLoading: isDeleting }] = useDeleteDocumentMutation()
 
-  const divisionMap = useMemo(() => new Map(divisions.map((d) => [d.id, d.name])), [divisions])
+  let divisionMap
+  // if (config.division_enabled) {
+  //   divisionMap = new Map(divisions.map((d) => [d.id, d.name]))
+  // }
+  if (config.division_enabled) {
+    divisionMap = useMemo(() => new Map(divisions.map((d) => [d.id, d.name])), [divisions])
+  } else {
+    divisionMap = new Map()
+  }
 
   const handleUpload = async () => {
-    if (!selectedFile || !uploadDivision) {
-      toast.error('Please choose a file and division')
-      return
+    if (config.division_enabled) {
+      if (!selectedFile || !uploadDivision) {
+        toast.error('Please choose a file and division')
+        return
+      }
+    } else {
+      if (!selectedFile) {
+        toast.error('Please choose a file')
+        return
+      }
     }
     try {
       setUploading(true)
@@ -212,23 +228,26 @@ export default function DocumentsPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Upload Document</DialogTitle>
-              <DialogDescription>Select a division and file to upload.</DialogDescription>
+              
+              <DialogDescription>{config.division_enabled ? 'Select a division and file to upload.' : 'Select a file to upload.'}</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="division">Division</Label>
-                <select
-                  id="division"
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  value={uploadDivision}
-                  onChange={(e) => setUploadDivision(e.target.value)}
-                >
-                  <option value="">Select division</option>
-                  {divisions.map((d: Division) => (
-                    <option key={d.id} value={d.id}>{d.name}</option>
-                  ))}
-                </select>
-              </div>
+              {config.division_enabled && (
+                <div className="space-y-2">
+                  <Label htmlFor="division">Division</Label>
+                  <select
+                    id="division"
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    value={uploadDivision}
+                    onChange={(e) => setUploadDivision(e.target.value)}
+                  >
+                    <option value="">Select division</option>
+                    {divisions.map((d: Division) => (
+                      <option key={d.id} value={d.id}>{d.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="file">File</Label>
                 <Input id="file" type="file" onChange={(e) => setSelectedFile(e.target.files?.[0] || null)} />
@@ -280,7 +299,8 @@ export default function DocumentsPage() {
         </Card>
       </div>
 
-      {/* Filters */}
+      {config.division_enabled && (
+      // {/* Filters */}
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Filters</CardTitle>
@@ -309,8 +329,9 @@ export default function DocumentsPage() {
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Table */}
       <Card>
@@ -319,7 +340,7 @@ export default function DocumentsPage() {
         </CardHeader>
         <CardContent>
           <DataTable
-            columns={columns}
+            columns={config.division_enabled ? columns : columns.filter((c) => c.header !== 'Division')}
             data={documents}
             isLoading={isLoading}
             searchKey="original_filename"

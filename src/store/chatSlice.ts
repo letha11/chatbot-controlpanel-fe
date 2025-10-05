@@ -1,5 +1,6 @@
 import { createSlice, nanoid, type PayloadAction } from '@reduxjs/toolkit'
 import type { ChatMessage, Conversation } from '@/types/entities'
+import { config } from '@/lib/environment'
 
 export interface ChatState {
   messages: ChatMessage[]
@@ -13,7 +14,7 @@ export interface ChatState {
 
 const initialState: ChatState = {
   messages: [],
-  selectedDivisionId: null,
+  selectedDivisionId: config.division_enabled ? null : 'default',
   currentConversationId: null,
   conversations: [],
   isSending: false,
