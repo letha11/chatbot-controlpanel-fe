@@ -32,15 +32,15 @@ export interface DocumentItem {
 }
 
 // Chat-related types
-export interface ChatSource {
-  filename: string
-  preview: string
-  distance?: number
-}
+// export interface ChatSource {
+//   filename: string
+//   preview: string
+//   distance?: number
+// }
 
 export interface ChatResponseData {
   answer: string
-  sources?: ChatSource[]
+  sources?: string
 }
 
 export type ChatRole = 'user' | 'assistant'
@@ -50,5 +50,27 @@ export interface ChatMessage {
   role: ChatRole
   content: string
   created_at: number
-  sources?: ChatSource[]
+  sources?: string
+}
+
+// Conversation types
+export interface Conversation {
+  id: string
+  title: string
+  division_id: string
+  user_id: string
+  created_at: string
+  updated_at: string
+}
+
+export interface ConversationHistory {
+  conversation: Conversation
+  messages: ChatMessage[]
+}
+
+export interface ChatRequest {
+  division_id: string
+  query: string
+  conversation_id?: string
+  title?: string
 }

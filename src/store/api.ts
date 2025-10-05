@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import type { LoginRequest, LoginResponse, ApiResponse, User } from '@/types/auth'
-import type { Division, DocumentItem, ChatResponseData } from '@/types/entities'
+import type { Division, DocumentItem, ChatResponseData, Conversation, ConversationHistory, ChatRequest } from '@/types/entities'
 
 // Base URL for the API - you can configure this via environment variables
 const API_BASE_URL = 'http://localhost:3000'
@@ -28,7 +28,7 @@ export const api = createApi({
       return headers
     },
   }),
-  tagTypes: ['User', 'Division', 'Document', 'Chat'],
+  tagTypes: ['User', 'Division', 'Document', 'Chat', 'Conversation'],
   endpoints: (builder) => ({
     login: builder.mutation<LoginResponse, LoginRequest>({
       query: (credentials) => ({
@@ -160,14 +160,36 @@ export const api = createApi({
     // Chat - send a message and receive an answer
     sendChatMessage: builder.mutation<
       ApiResponse<ChatResponseData>,
-      { division_id: string; message: string }
+      ChatRequest
     >({
-      query: ({ division_id, message }) => ({
+      query: ({ division_id, query, conversation_id }) => ({
         url: '/api/v1/chat',
         method: 'POST',
-        body: { division_id, query: message },
+        body: { division_id, query, conversation_id },
       }),
-      invalidatesTags: ['Chat'],
+      invalidatesTags: ['Chat', 'Conversation'],
+    }),
+
+    // Conversation endpoints
+    getConversations: builder.query<ApiResponse<{ conversations: Conversation[] }>, { division_id?: string; limit?: number } | void>({
+      query: (params) => {
+        const search = new URLSearchParams()
+        if (params?.division_id) search.set('division_id', params.division_id)
+        if (params?.limit) search.set('limit', String(params.limit))
+        const qs = search.toString()
+        return `/api/v1/conversations${qs ? `?${qs}` : ''}`
+      },
+      providesTags: ['Conversation'],
+    }),
+
+    getConversationHistory: builder.query<ApiResponse<ConversationHistory>, { conversation_id: string; limit?: number }>({
+      query: ({ conversation_id, limit }) => {
+        const search = new URLSearchParams()
+        if (limit) search.set('limit', String(limit))
+        const qs = search.toString()
+        return `/api/v1/conversations/${conversation_id}/history${qs ? `?${qs}` : ''}`
+      },
+      providesTags: ['Conversation'],
     }),
   }),
 })
@@ -188,4 +210,6 @@ export const {
   useCreateUserMutation,
   useUpdateUserMutation,
   useDeleteUserMutation,
+  useGetConversationsQuery,
+  useGetConversationHistoryQuery,
 } = api

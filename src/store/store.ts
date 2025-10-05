@@ -1,4 +1,4 @@
-import { combineReducers, configureStore } from '@reduxjs/toolkit'
+import { combineReducers, configureStore, createAction } from '@reduxjs/toolkit'
 import { setupListeners } from '@reduxjs/toolkit/query'
 import { persistStore, persistReducer } from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
@@ -18,7 +18,19 @@ const rootReducer = combineReducers({
   [api.reducerPath]: api.reducer,
 })
 
-const persistedReducer = persistReducer(persistConfig, rootReducer)
+// Create a logout action that resets both auth and chat state
+export const logout = createAction('app/logout')
+
+// Enhanced reducer that handles the logout action
+const enhancedRootReducer = (state: ReturnType<typeof rootReducer> | undefined, action: { type: string }) => {
+  if (action.type === 'app/logout') {
+    // Reset the entire state to initial values
+    state = undefined
+  }
+  return rootReducer(state, action)
+}
+
+const persistedReducer = persistReducer(persistConfig, enhancedRootReducer)
 
 export const store = configureStore({
   reducer: persistedReducer,
