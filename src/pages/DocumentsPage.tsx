@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { type ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -18,10 +18,11 @@ import { MoreHorizontal, Upload, Trash2, Power } from 'lucide-react'
 import { useGetDivisionsQuery, useGetDocumentsQuery, useUploadDocumentMutation, useToggleDocumentActiveMutation, useDeleteDocumentMutation } from '@/store/api'
 import type { Division, DocumentItem } from '@/types/entities'
 import { config } from '@/lib/environment'
+import { useSSE } from '@/contexts/SSEContext'
 
 export default function DocumentsPage() {
   const { data: divisionsResp } = useGetDivisionsQuery()
-  const divisions = divisionsResp?.data || []
+  const divisions = useMemo(() => divisionsResp?.data || [], [divisionsResp?.data])
 
   const [selectedDivisionId, setSelectedDivisionId] = useState<string>('')
   const [onlyActive, setOnlyActive] = useState<boolean>(false)
@@ -31,6 +32,21 @@ export default function DocumentsPage() {
   )
   const documents = documentsResp?.data || []
 
+  // SSE Integration - using global context
+  const {
+    processingStatus,
+    getDocumentStatus,
+    clearDocumentStatus,
+    setOnTableRefresh
+  } = useSSE()
+
+  // Set up table refresh callback for SSE
+  useEffect(() => {
+    setOnTableRefresh(() => {
+      refetch()
+    })
+  }, [refetch, setOnTableRefresh])
+
   const [uploadOpen, setUploadOpen] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -39,15 +55,12 @@ export default function DocumentsPage() {
   const [toggleActive, { isLoading: isToggling }] = useToggleDocumentActiveMutation()
   const [deleteDocument, { isLoading: isDeleting }] = useDeleteDocumentMutation()
 
-  let divisionMap
-  // if (config.division_enabled) {
-  //   divisionMap = new Map(divisions.map((d) => [d.id, d.name]))
-  // }
-  if (config.division_enabled) {
-    divisionMap = useMemo(() => new Map(divisions.map((d) => [d.id, d.name])), [divisions])
-  } else {
-    divisionMap = new Map()
-  }
+  const divisionMap = useMemo(() => {
+    if (config.division_enabled) {
+      return new Map(divisions.map((d) => [d.id, d.name]))
+    }
+    return new Map()
+  }, [divisions])
 
   const handleUpload = async () => {
     if (config.division_enabled) {
@@ -69,8 +82,9 @@ export default function DocumentsPage() {
       setSelectedFile(null)
       setUploadDivision('')
       refetch()
-    } catch (err: any) {
-      toast.error(err?.data?.error || 'Upload failed')
+    } catch (err: unknown) {
+      const error = err as { data?: { error?: string } }
+      toast.error(error?.data?.error || 'Upload failed')
     } finally {
       setUploading(false)
     }
@@ -80,8 +94,9 @@ export default function DocumentsPage() {
     try {
       await toggleActive({ id: doc.id, is_active: !doc.is_active }).unwrap()
       toast.success(doc.is_active ? 'Deactivated' : 'Activated')
-    } catch (err: any) {
-      toast.error(err?.data?.error || 'Failed to toggle')
+    } catch (err: unknown) {
+      const error = err as { data?: { error?: string } }
+      toast.error(error?.data?.error || 'Failed to toggle')
     }
   }
 
@@ -89,15 +104,66 @@ export default function DocumentsPage() {
     try {
       await deleteDocument(id).unwrap()
       toast.success('Document deleted')
-    } catch (err: any) {
-      toast.error(err?.data?.error || 'Failed to delete')
+    } catch (err: unknown) {
+      const error = err as { data?: { error?: string } }
+      toast.error(error?.data?.error || 'Failed to delete')
     }
   }
 
-  const renderStatusBadge = (status: DocumentItem['status']) => {
-    const variant = status === 'embedded' ? 'default' : status === 'uploaded' || status === 'parsing' ? 'secondary' : 'destructive'
-    const text = status.replace('_', ' ')
-    return <Badge variant={variant as any}>{text}</Badge>
+  const renderStatusBadge = (doc: DocumentItem) => {
+    const sseStatus = getDocumentStatus(doc.id)
+    const currentStatus = sseStatus?.status || doc.status
+    
+    let variant: 'default' | 'secondary' | 'destructive' | 'outline'
+    let text: string
+    let showProgress = false
+
+    switch (currentStatus) {
+      case 'embedded':
+        variant = 'default'
+        text = 'embedded'
+        break
+      case 'parsing_started':
+      case 'parsing':
+        variant = 'secondary'
+        text = 'parsing'
+        showProgress = true
+        break
+      case 'parsed':
+        variant = 'outline'
+        text = 'parsed'
+        break
+      case 'embedding':
+        variant = 'secondary'
+        text = 'embedding'
+        showProgress = true
+        break
+      case 'failed':
+        variant = 'destructive'
+        text = 'failed'
+        break
+      case 'uploaded':
+        variant = 'secondary'
+        text = 'uploaded'
+        break
+      default:
+        variant = 'secondary'
+        text = currentStatus.replace('_', ' ')
+    }
+
+    return (
+      <div className="flex items-center gap-2">
+        <Badge variant={variant}>{text}</Badge>
+        {showProgress && sseStatus && (
+          <div className="w-16 h-1 bg-gray-200 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-blue-500 transition-all duration-300"
+              style={{ width: `${sseStatus.status === 'parsing' ? 30 : sseStatus.status === 'embedding' ? 80 : 10}%` }}
+            />
+          </div>
+        )}
+      </div>
+    )
   }
 
   const columns: ColumnDef<DocumentItem>[] = [
@@ -122,7 +188,7 @@ export default function DocumentsPage() {
     {
       accessorKey: 'status',
       header: 'Status',
-      cell: ({ row }) => renderStatusBadge(row.original.status),
+      cell: ({ row }) => renderStatusBadge(row.original),
     },
     {
       accessorKey: 'is_active',
@@ -200,7 +266,7 @@ export default function DocumentsPage() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <h2 className="text-lg font-semibold mb-2">Error loading documents</h2>
-          <p className="text-muted-foreground">{(error as any)?.data?.error || 'Failed to load documents'}</p>
+          <p className="text-muted-foreground">{(error as { data?: { error?: string } })?.data?.error || 'Failed to load documents'}</p>
         </div>
       </div>
     )

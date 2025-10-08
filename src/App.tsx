@@ -8,12 +8,14 @@ import ChatPage from '@/pages/ChatPage'
 import PrivateRoute from '@/components/PrivateRoute'
 import Layout from '@/components/Layout'
 import UserPage from '@/pages/UserPage'
+import { SSEProvider } from '@/contexts/SSEContext'
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <Routes>
+    <SSEProvider>
+      <Router>
+        <div className="App">
+          <Routes>
           {/* Public routes */}
           <Route path="/login" element={<LoginPage />} />
           
@@ -76,10 +78,11 @@ function App() {
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
         
-        {/* Toast notifications */}
-        <Toaster />
-      </div>
-    </Router>
+          {/* Toast notifications */}
+          <Toaster />
+        </div>
+      </Router>
+    </SSEProvider>
   )
 }
 

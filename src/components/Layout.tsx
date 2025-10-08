@@ -6,6 +6,8 @@ import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { logout } from '@/store/authSlice'
 import { cn } from '@/lib/utils'
 import { config } from '@/lib/environment'
+import { useSSE } from '@/contexts/SSEContext'
+import { Wifi, WifiOff } from 'lucide-react'
 
 interface LayoutProps {
   children: ReactNode
@@ -16,6 +18,7 @@ export default function Layout({ children }: LayoutProps) {
   const location = useLocation()
   const dispatch = useAppDispatch()
   const { user } = useAppSelector((state) => state.auth)
+  const { isConnected, connectionError } = useSSE()
 
   const handleLogout = () => {
     dispatch(logout())
@@ -37,6 +40,21 @@ export default function Layout({ children }: LayoutProps) {
             </div>
             
             <div className="flex items-center space-x-4">
+              {/* SSE Connection Status */}
+              <div className="flex items-center gap-2">
+                {isConnected ? (
+                  <div className="flex items-center gap-1 text-green-600" title="Real-time updates connected">
+                    <Wifi className="h-4 w-4" />
+                    <span className="text-sm">Live</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 text-red-600" title={connectionError || "Real-time updates disconnected"}>
+                    <WifiOff className="h-4 w-4" />
+                    <span className="text-sm">Offline</span>
+                  </div>
+                )}
+              </div>
+              
               {user && (
                 <span className="text-sm text-muted-foreground">
                   Welcome, <span className="font-medium text-foreground">{user.name}</span>
