@@ -1,6 +1,6 @@
 "use client"
 
-import { useForm } from 'react-hook-form'
+import { useForm, type Resolver, type SubmitHandler, type UseFormReturn } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 
@@ -44,8 +44,8 @@ export function DivisionForm({
   onCancel,
   isLoading = false,
 }: DivisionFormProps) {
-  const form = useForm<DivisionFormData>({
-    resolver: zodResolver(divisionFormSchema),
+  const form: UseFormReturn<DivisionFormData> = useForm<DivisionFormData>({
+    resolver: zodResolver(divisionFormSchema) as Resolver<DivisionFormData>,
     defaultValues: {
       name: initialData?.name || '',
       description: initialData?.description || '',
@@ -53,12 +53,13 @@ export function DivisionForm({
     },
   })
 
-  const handleSubmit = async (data: DivisionFormData) => {
+  const handleSubmit: SubmitHandler<DivisionFormData> = async (data: DivisionFormData): Promise<void> => {
     await onSubmit(data)
   }
 
   return (
     <Form {...form}>
+      {/* <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6"> */}
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <FormField
           control={form.control}

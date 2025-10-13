@@ -18,7 +18,7 @@ import { MoreHorizontal, Upload, Trash2, Power } from 'lucide-react'
 import { useGetDivisionsQuery, useGetDocumentsQuery, useUploadDocumentMutation, useToggleDocumentActiveMutation, useDeleteDocumentMutation } from '@/store/api'
 import type { Division, DocumentItem } from '@/types/entities'
 import { config } from '@/lib/environment'
-import { useSSE } from '@/contexts/SSEContext'
+import { useSSE } from '@/contexts/SSE/Context'
 
 export default function DocumentsPage() {
   const { data: divisionsResp } = useGetDivisionsQuery()
@@ -34,9 +34,9 @@ export default function DocumentsPage() {
 
   // SSE Integration - using global context
   const {
-    processingStatus,
+    // processingStatus,
     getDocumentStatus,
-    clearDocumentStatus,
+    // clearDocumentStatus,
     setOnTableRefresh
   } = useSSE()
 

@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import ReactMarkdown from 'react-markdown'
 import { useGetDivisionsQuery, useSendChatMessageMutation, useGetConversationsQuery, useGetConversationHistoryQuery } from '@/store/api'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { 
@@ -24,6 +23,7 @@ import type { Division, Conversation, ChatMessage } from '@/types/entities'
 import { toast } from 'sonner'
 import { Send, Plus, MessageSquare } from 'lucide-react'
 import { config } from '@/lib/environment'
+import MarkdownRenderer from '@/components/MarkdownRenderer'
 
 export default function ChatPage() {
   const dispatch = useAppDispatch()
@@ -142,9 +142,9 @@ export default function ChatPage() {
     }
   }
 
-  const onClear = () => {
-    dispatch(clearChat())
-  }
+  // const onClear = () => {
+  //   dispatch(clearChat())
+  // }
 
   const onSelectConversation = (conversationId: string) => {
     if (conversationId === currentConversationId) return
@@ -300,32 +300,50 @@ export default function ChatPage() {
                     }
                   </div>
                 ) : (
-                  messages.map((m: ChatMessage) => (
-                    <div key={m.id} className={m.role === 'user' ? 'text-right' : 'text-left'}>
-                      <div className={
-                        m.role === 'user'
-                          ? 'inline-block px-3 py-2 rounded-lg bg-primary text-primary-foreground max-w-[80%]'
-                          : 'inline-block px-3 py-2 rounded-lg bg-muted max-w-[80%]'
-                      }>
-                        {m.role === 'assistant' ? (
-                          <div className="prose prose-sm dark:prose-invert max-w-none">
-                            <ReactMarkdown>{m.content}</ReactMarkdown>
+                  <>
+                    {messages.map((m: ChatMessage) => (
+                      <div key={m.id} className={m.role === 'user' ? 'text-right' : 'text-left'}>
+                        <div className={
+                          m.role === 'user'
+                            ? 'inline-block px-3 py-2 rounded-lg bg-primary text-primary-foreground max-w-[80%]'
+                            : 'inline-block px-3 py-2 rounded-lg bg-muted max-w-[80%]'
+                        }>
+                          {m.role === 'assistant' ? (
+                            <div className="prose prose-sm dark:prose-invert max-w-none overflow-x-auto">
+                              {/* <ReactMarkdown>{m.content}</ReactMarkdown> */}
+                              <MarkdownRenderer>{m.content.replace(/(\[.*?\])/g, "$1\n")}</MarkdownRenderer>
+                            </div>
+                          ) : (
+                            <div className="whitespace-pre-wrap text-sm">{m.content}</div>
+                          )}
+                        </div>
+                        {m.sources && m.sources.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {m.sources?.split(',').map((s, idx: number) => (
+                              <Badge key={idx} variant="secondary" className="text-xs">
+                                {s}
+                              </Badge>
+                            ))}
                           </div>
-                        ) : (
-                          <div className="whitespace-pre-wrap text-sm">{m.content}</div>
                         )}
                       </div>
-                      {m.sources && m.sources.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {m.sources?.split(',').map((s, idx: number) => (
-                            <Badge key={idx} variant="secondary" className="text-xs">
-                              {s}
-                            </Badge>
-                          ))}
+                    ))}
+                    {/* Loading indicator for assistant response */}
+                    {isSending && (
+                      <div className="text-left">
+                        <div className="inline-block px-3 py-2 rounded-lg bg-muted max-w-[80%]">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <div className="flex space-x-1">
+                              <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                              <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                              <div className="w-2 h-2 bg-current rounded-full animate-bounce"></div>
+                            </div>
+                            <span>AI is thinking...</span>
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  ))
+                      </div>
+                    )}
+                  </>
                 )}
                 <div ref={endRef} />
               </div>

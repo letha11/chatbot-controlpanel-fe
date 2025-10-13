@@ -8,7 +8,7 @@ import ChatPage from '@/pages/ChatPage'
 import PrivateRoute from '@/components/PrivateRoute'
 import Layout from '@/components/Layout'
 import UserPage from '@/pages/UserPage'
-import { SSEProvider } from '@/contexts/SSEContext'
+import { SSEProvider } from '@/contexts/SSE/Provider'
 
 function App() {
   return (

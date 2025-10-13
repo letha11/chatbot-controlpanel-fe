@@ -6,7 +6,7 @@ import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { logout } from '@/store/authSlice'
 import { cn } from '@/lib/utils'
 import { config } from '@/lib/environment'
-import { useSSE } from '@/contexts/SSEContext'
+import { useSSE } from '@/contexts/SSE/Context'
 import { Wifi, WifiOff } from 'lucide-react'
 
 interface LayoutProps {
