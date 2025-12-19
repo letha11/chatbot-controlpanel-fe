@@ -1,3 +1,5 @@
+import { config } from "./environment";
+
 // SSE Service for handling real-time document processing events
 export interface SSEConnectionEvent {
   message: string;
@@ -33,8 +35,8 @@ export class DocumentProcessingSSE {
   private reconnectDelay: number = 1000;
   private baseUrl: string;
 
-  constructor(baseUrl: string = 'http://localhost:3000') {
-    this.baseUrl = baseUrl;
+  constructor() {
+    this.baseUrl = config.apiBaseUrl;
   }
 
   connect() {

@@ -1,0 +1,31 @@
+sequenceDiagram
+    actor Admin as Admin
+    participant CP as Control Panel
+    participant API as Backend API
+    participant REPO as Document Repository
+    participant DB as Database
+    participant OBJECT_STORAGE as MinIO Service
+    participant VECTOR_DATABASE as OpenSearch Service
+
+    Admin->>CP: 1. Pilih menu dokumen
+    CP->>API: 2. GET Request /documents
+    API->>REPO: 3. getAllDocuments()
+    REPO->>DB: 4. Query data Document
+    DB-->>REPO: 5. Data Document
+    REPO-->>API: 5.1 Data Document
+    API-->>CP: 5.2 Data Document
+    CP->>Admin: 6. Menampilkan data dokumen
+    Admin->>CP: 7. Klik menu "Aksi"
+    CP->>Admin: 8. Menampilkan menu-menu aksi
+    Admin->>CP: 9. Klik menu "Hapus"
+    CP->>API: 10. DELETE Request /documents/{id}
+    API->>API: 11. Validasi Input
+    API->>OBJECT_STORAGE: 12. Delete file dari MinIO
+    API->>VECTOR_DATABASE: 13. Delete embedding dokumen dari OpenSearch
+    API->>REPO: 14. deleteDocument()
+    REPO->>DB: 15. Delete data Document
+    DB-->>REPO: 16. Pesan berhasil hapus dokumen
+    REPO-->>API: 16.1 Pesan berhasil hapus dokumen
+    API-->>CP: 16.2 Pesan berhasil hapus dokumen
+    CP->>Admin: 17. Menampilkan pesan berhasil hapus dokumen
+    CP->>Admin: 18. Redirect ke halaman dokumen

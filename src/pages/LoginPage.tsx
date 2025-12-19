@@ -16,7 +16,8 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { useLoginMutation } from '@/store/api'
-import { useAppSelector } from '@/store/hooks'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { logout } from '@/store/authSlice'
 
 // Validation schema using Zod
 const loginSchema = z.object({
@@ -32,7 +33,8 @@ type LoginFormValues = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const { isAuthenticated } = useAppSelector((state) => state.auth)
+  const { isAuthenticated, user } = useAppSelector((state) => state.auth)
+  const dispatch = useAppDispatch()
   const [login, { isLoading }] = useLoginMutation()
 
   const form = useForm<LoginFormValues>({
@@ -52,7 +54,14 @@ export default function LoginPage() {
 
   const onSubmit = async (values: LoginFormValues) => {
     try {
-      await login(values).unwrap()
+      const response = await login(values).unwrap()
+
+      if (response.data?.user?.role === 'user') {
+        toast.error('You are not authorized to access this page.')
+        dispatch(logout())
+        return
+      } 
+
       toast.success('Login successful!')
       navigate('/dashboard', { replace: true })
     } catch (error) {

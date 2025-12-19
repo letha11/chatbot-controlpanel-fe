@@ -133,7 +133,7 @@ export default function Layout({ children }: LayoutProps) {
                   Documents
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link
                   to="/chat"
                   className={cn(
@@ -145,7 +145,7 @@ export default function Layout({ children }: LayoutProps) {
                 >
                   Chatbot
                 </Link>
-              </li>
+              </li> */}
             </ul>
           </div>
         </nav>

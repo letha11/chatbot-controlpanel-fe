@@ -3,11 +3,15 @@ import { useGetDivisionsQuery, useGetDocumentsQuery, useGetUsersQuery } from '@/
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { config } from '@/lib/environment'
+import { useAppSelector } from '@/store/hooks'
 
 export default function DashboardPage() {
+  const { user } = useAppSelector((state) => state.auth)
   const { data: divisionsResp, isLoading: isDivisionsLoading } = useGetDivisionsQuery()
   const { data: documentsResp, isLoading: isDocumentsLoading } = useGetDocumentsQuery()
-  const { data: usersResp, isLoading: isUsersLoading } = useGetUsersQuery()
+  const { data: usersResp, isLoading: isUsersLoading } = useGetUsersQuery(undefined, {
+    skip: user?.role !== 'super_admin',
+  })
 
   const users = usersResp?.data ?? []
   const divisions = divisionsResp?.data ?? []
@@ -34,14 +38,17 @@ export default function DashboardPage() {
 
       {/* Top-level metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm text-muted-foreground">Users</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-semibold">{isLoading ? '—' : users.length}</div>
-          </CardContent>
-        </Card>
+        
+        { user?.role === 'super_admin' && 
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm text-muted-foreground">Users</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-semibold">{isLoading ? '—' : users.length}</div>
+            </CardContent>
+          </Card>
+        }
 
         {config.division_enabled && (
           <Card>

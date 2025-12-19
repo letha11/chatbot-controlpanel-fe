@@ -1,0 +1,27 @@
+sequenceDiagram
+    actor Admin as Admin
+    participant CP as Control Panel
+    participant API as Backend API
+    participant USER_REPO as User Repository
+    participant DB as Database
+
+    Admin->>CP: 1. Buka halaman login
+    CP-->>Admin: 2. Form login
+    Admin->>CP: 3. Input Username & password
+    CP->>API: 4. POST Request /auth/login
+    API->>API: 5. Validasi Input
+    API->>USER_REPO: 6. getUserByUsername()
+    USER_REPO->>DB: 7. Query data User
+    DB-->>USER_REPO: 8. Data User + hashed password
+    USER_REPO-->>API: 8.1 Data User
+    API->>API: 9. Validasi password
+
+    alt Kredensial valid
+        API->>API: 9.1.1 Generate JWT
+        API-->>CP: 9.1.2 JWT Token
+        CP->>Admin: 9.1.3 Menampilkan pesan berhasil login
+        CP->>Admin: 9.1.4 Redirect ke Dashboard
+    else Kredensial tidak valid
+        API-->>CP: 9.2.1 Pesan error
+        CP->>Admin: 9.2.2 Menampilkan pesan error
+    end

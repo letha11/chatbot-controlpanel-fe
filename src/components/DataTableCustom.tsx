@@ -14,7 +14,8 @@ import {
 import { useState } from 'react'
 
 import {
-  Table,
+//   Table,
+  TableCustom,
   TableBody,
   TableCell,
   TableHead,
@@ -29,14 +30,28 @@ interface DataTableProps<TData, TValue> {
   isLoading?: boolean
   searchKey?: string
   searchPlaceholder?: string
+  /**
+   * Optional externally controlled search value.
+   * When provided together with `onSearchChange`, the table will NOT use
+   * TanStack's internal column filtering, and will instead rely on the
+   * parent component to perform filtering (e.g. linear search).
+   */
+  searchValue?: string
+  /**
+   * Optional search change handler for externally controlled search.
+   * See `searchValue` docs above.
+   */
+  onSearchChange?: (value: string) => void
 }
 
-export function DataTable<TData, TValue>({
+export function DataTableCustom<TData, TValue>({
   columns,
   data,
   isLoading = false,
   searchKey = 'name',
   searchPlaceholder = 'Search...',
+  searchValue,
+  onSearchChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -63,18 +78,30 @@ export function DataTable<TData, TValue>({
       <div className="flex items-center py-4">
         <Input
           placeholder={searchPlaceholder}
-          value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ''}
-          onChange={(event) =>
-            table.getColumn(searchKey)?.setFilterValue(event.target.value)
+          value={
+            onSearchChange
+              ? searchValue ?? ''
+              : ((table.getColumn(searchKey)?.getFilterValue() as string) ??
+                '')
           }
+          onChange={(event) => {
+            const value = event.target.value
+            if (onSearchChange) {
+              onSearchChange(value)
+            } else {
+              table.getColumn(searchKey)?.setFilterValue(value)
+            }
+          }}
           className="max-w-sm"
         />
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-md border">
-          <Table>
-            <TableHeader>
+        {/* <ScrollArea> */}
+      <div className="rounded-md border">
+        <div className="h-[40vh] relative overflow-auto">
+          <TableCustom>
+            <TableHeader className="sticky top-0 bg-background">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
@@ -120,8 +147,9 @@ export function DataTable<TData, TValue>({
                 </TableRow>
               )}
             </TableBody>
-          </Table>
-      </div>
+          </TableCustom>
+          </div>
+        </div>
 
       {/* Pagination */}
       {/* <div className="flex items-center justify-end space-x-2 py-4">

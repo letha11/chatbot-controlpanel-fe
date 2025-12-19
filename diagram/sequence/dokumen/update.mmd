@@ -1,0 +1,27 @@
+sequenceDiagram
+    actor Admin as Admin
+    participant CP as Control Panel
+    participant API as Backend API
+    participant REPO as Document Repository
+    participant DB as Database
+
+    Admin->>CP: 1. Pilih menu dokumen
+    CP->>API: 2. GET Request /documents
+    API->>REPO: 3. getAllDocuments()
+    REPO->>DB: 4. Query data Document
+    DB-->>REPO: 5. Data Document
+    REPO-->>API: 5.1 Data Document
+    API-->>CP: 5.2 Data Document
+    CP->>Admin: 6. Menampilkan data dokumen
+    Admin->>CP: 7. Klik menu "Aksi"
+    CP->>Admin: 8. Menampilkan menu-menu aksi
+    Admin->>CP: 9. Klik menu "Aktifkan" atau "Nonaktifkan"
+    CP->>API: 10. PATCH Request /documents/{id}/toggle
+    API->>API: 11. Validasi Input
+    API->>REPO: 12. updateDocumentStatus()
+    REPO->>DB: 13. Update status dokumen
+    DB-->>REPO: 14. Pesan berhasil update status dokumen
+    REPO-->>API: 14.1 Pesan berhasil update status dokumen
+    API-->>CP: 14.2 Pesan berhasil update status dokumen
+    CP->>Admin: 15. Menampilkan pesan berhasil update status dokumen
+    CP->>Admin: 16. Redirect ke halaman dokumen

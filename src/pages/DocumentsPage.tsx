@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { DataTable } from '@/components/DataTable'
+import { DataTableCustom } from '@/components/DataTableCustom'
 import { toast } from 'sonner'
 import { MoreHorizontal, Upload, Trash2, Power } from 'lucide-react'
 
@@ -30,7 +30,10 @@ export default function DocumentsPage() {
   const { data: documentsResp, isLoading, error, refetch } = useGetDocumentsQuery(
     { division_id: selectedDivisionId || undefined, is_active: onlyActive ? true : undefined }
   )
-  const documents = documentsResp?.data || []
+  const documents = useMemo(
+    () => documentsResp?.data ?? [],
+    [documentsResp?.data]
+  )
 
   // SSE Integration - using global context
   const {
@@ -52,6 +55,7 @@ export default function DocumentsPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [uploadDivision, setUploadDivision] = useState<string>('')
   const [uploadDocument] = useUploadDocumentMutation()
+  const [searchTerm, setSearchTerm] = useState<string>('')
   const [toggleActive, { isLoading: isToggling }] = useToggleDocumentActiveMutation()
   const [deleteDocument, { isLoading: isDeleting }] = useDeleteDocumentMutation()
 
@@ -61,6 +65,18 @@ export default function DocumentsPage() {
     }
     return new Map()
   }, [divisions])
+
+  // Linear search on filename (filter)
+  const filteredDocuments = useMemo(() => {
+    if (!searchTerm) return documents
+
+    const lowered = searchTerm.toLowerCase()
+
+    // Linear search on filename
+    return documents.filter((doc) =>
+      doc.original_filename?.toLowerCase().includes(lowered)
+    )
+  }, [documents, searchTerm])
 
   const handleUpload = async () => {
     if (config.division_enabled) {
@@ -405,12 +421,14 @@ export default function DocumentsPage() {
           <CardTitle>All Documents</CardTitle>
         </CardHeader>
         <CardContent>
-          <DataTable
+          <DataTableCustom
             columns={config.division_enabled ? columns : columns.filter((c) => c.header !== 'Division')}
-            data={documents}
+            data={filteredDocuments}
             isLoading={isLoading}
             searchKey="original_filename"
             searchPlaceholder="Search filename..."
+            searchValue={searchTerm}
+            onSearchChange={setSearchTerm}
           />
         </CardContent>
       </Card>

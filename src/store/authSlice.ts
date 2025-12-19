@@ -2,39 +2,39 @@ import { createSlice } from '@reduxjs/toolkit'
 import type { AuthState } from '@/types/auth'
 import { api } from './api'
 
-// // Helper function to get token from localStorage
-// const getTokenFromStorage = (): string | null => {
-//   try {
-//     return localStorage.getItem('auth_token')
-//   } catch {
-//     return null
-//   }
-// }
+// Helper function to get token from localStorage
+const getTokenFromStorage = (): string | null => {
+  try {
+    return localStorage.getItem('auth_token')
+  } catch {
+    return null
+  }
+}
 
-// // Helper function to save token to localStorage
-// const saveTokenToStorage = (token: string): void => {
-//   try {
-//     localStorage.setItem('auth_token', token)
-//   } catch {
-//     // Handle storage errors silently
-//   }
-// }
+// Helper function to save token to localStorage
+const saveTokenToStorage = (token: string): void => {
+  try {
+    localStorage.setItem('auth_token', token)
+  } catch {
+    // Handle storage errors silently
+  }
+}
 
-// // Helper function to remove token from localStorage
-// const removeTokenFromStorage = (): void => {
-//   try {
-//     localStorage.removeItem('auth_token')
-//   } catch {
-//     // Handle storage errors silently
-//   }
-// }
+// Helper function to remove token from localStorage
+const removeTokenFromStorage = (): void => {
+  try {
+    localStorage.removeItem('auth_token')
+  } catch {
+    // Handle storage errors silently
+  }
+}
 
 const initialState: AuthState = {
   user: null,
-  // token: getTokenFromStorage(),
-  token: null,
-  isAuthenticated: false,
-  // isAuthenticated: !!getTokenFromStorage(),
+  token: getTokenFromStorage(),
+  // token: null,
+  // isAuthenticated: false,
+  isAuthenticated: !getTokenFromStorage(),
   isLoading: false,
 }
 
@@ -47,7 +47,7 @@ const authSlice = createSlice({
       state.token = null
       state.isAuthenticated = false
       state.isLoading = false
-      // removeTokenFromStorage()
+      removeTokenFromStorage()
     },
     setLoading: (state, action) => {
       state.isLoading = action.payload
@@ -69,7 +69,7 @@ const authSlice = createSlice({
           state.user = action.payload.data.user
           state.token = action.payload.data.token
           state.isAuthenticated = true
-          // saveTokenToStorage(action.payload.data.token)
+          saveTokenToStorage(action.payload.data.token)
         }
       )
       .addMatcher(
@@ -79,7 +79,7 @@ const authSlice = createSlice({
           state.user = null
           state.token = null
           state.isAuthenticated = false
-          // removeTokenFromStorage()
+          removeTokenFromStorage()
         }
       )
       // Handle getCurrentUser
@@ -96,7 +96,7 @@ const authSlice = createSlice({
           state.user = null
           state.token = null
           state.isAuthenticated = false
-          // removeTokenFromStorage()
+          removeTokenFromStorage()
         }
       )
   },

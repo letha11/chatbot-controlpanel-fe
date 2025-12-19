@@ -33,7 +33,7 @@ function App() {
           <Route
             path="/users"
             element={
-              <PrivateRoute>
+              <PrivateRoute allowedRoles={['super_admin']}>
                 <Layout>
                   <UserPage />
                 </Layout>

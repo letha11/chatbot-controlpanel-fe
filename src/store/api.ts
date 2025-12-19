@@ -3,9 +3,6 @@ import type { LoginRequest, LoginResponse, ApiResponse, User } from '@/types/aut
 import type { Division, DocumentItem, ChatResponseData, Conversation, ConversationHistory, ChatRequest } from '@/types/entities'
 import { config } from '@/lib/environment'
 
-// Base URL for the API - you can configure this via environment variables
-const API_BASE_URL = 'http://localhost:3000'
-
 // Type for the state structure
 interface RootState {
   auth: {
@@ -16,7 +13,7 @@ interface RootState {
 export const api = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
-    baseUrl: API_BASE_URL,
+    baseUrl: config.apiBaseUrl,
     prepareHeaders: (headers, { getState }) => {
       // Get the token from the auth state
       const token = (getState() as RootState).auth.token

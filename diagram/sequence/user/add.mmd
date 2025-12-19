@@ -1,0 +1,32 @@
+sequenceDiagram
+    actor Admin as Super Admin
+    participant CP as Control Panel
+    participant API as Backend API
+    participant REPO as User Repository
+    participant DB as Database
+
+    Admin->>CP: 1. Pilih menu user
+    CP->>API: 2. GET Request /user
+    API->>REPO: 3. getAllUsers()
+    REPO->>DB: 4. Query data User
+    DB-->>REPO: 5. Data Users
+    REPO-->>API: 5.1 Data Users
+    API-->>CP: 5.2 Data Users
+    CP->>Admin: 6. Menampilkan data users
+    Admin->>CP: 7. Klik tombol "Tambah User"
+    CP->>Admin: 8. Menampilkan form tambah user
+    Admin->>CP: 9. Input data user
+    CP->>API: 10. POST Request /user
+    API->>API: 11. Validasi Input 
+    alt Username sudah ada
+        API-->>CP: 11.1.1 Pesan error
+        CP-->>Admin: 11.1.2 Menampilkan pesan error
+    else Username belum ada
+        API->>REPO: 11.1.2 createUser()
+        REPO->>DB: 11.1.3 Insert data User
+        DB-->>REPO: 11.1.4 Data User
+        REPO-->>API: 11.1.5 Data User
+        API-->>CP: 11.1.6 Data User
+        CP->>Admin: 11.1.7 Menampilkan pesan berhasil tambah user
+        CP->>Admin: 11.1.8 Redirect ke halaman user
+    end

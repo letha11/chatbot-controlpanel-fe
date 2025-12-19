@@ -1,0 +1,28 @@
+sequenceDiagram
+    actor Admin as Super Admin
+    participant CP as Control Panel
+    participant API as Backend API
+    participant REPO as User Repository
+    participant DB as Database
+
+    Admin->>CP: 1. Pilih menu user
+    CP->>API: 2. GET Request /user
+    API->>REPO: 3. getAllUsers()
+    REPO->>DB: 4. Query data User
+    DB-->>REPO: 5. Data Users
+    REPO-->>API: 5.1 Data Users
+    API-->>CP: 5.2 Data Users
+    CP->>Admin: 6. Menampilkan data users
+    Admin->>CP: 7. Klik menu "Aksi"
+    CP->>Admin: 8. Menampilkan menu-menu aksi
+    Admin->>CP: 9. Klik menu "Hapus"
+    CP->>Admin: 10. Menampilkan dialog konfirmasi hapus
+    Admin->>CP: 11. Klik tombol "Hapus"
+    CP->>API: 12. DELETE Request /user/{id}
+    API->>REPO: 13. deleteUser()
+    REPO->>DB: 14. Delete data User
+    DB-->>REPO: 15. Pesan berhasil hapus user
+    REPO-->>API: 15.1 Pesan berhasil hapus user
+    API-->>CP: 15.2 Pesan berhasil hapus user
+    CP->>Admin: 16. Menampilkan pesan berhasil hapus user
+    CP->>Admin: 17. Redirect ke halaman user
