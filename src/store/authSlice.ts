@@ -34,7 +34,7 @@ const initialState: AuthState = {
   token: getTokenFromStorage(),
   // token: null,
   // isAuthenticated: false,
-  isAuthenticated: !getTokenFromStorage(),
+  isAuthenticated: !!getTokenFromStorage(),
   isLoading: false,
 }
 

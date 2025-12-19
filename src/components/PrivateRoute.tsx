@@ -26,9 +26,9 @@ export default function PrivateRoute({ children, allowedRoles }: PrivateRoutePro
     )
   }
 
-  if (isCurrentUserError && isCurrentUserError?.status === 401) {
+  if (isCurrentUserError && 'status' in isCurrentUserError && (isCurrentUserError as { status: number }).status === 401) {
     dispatch(logout())
-    // return <Navigate to="/login" state={{ from: location }} replace />
+    return <Navigate to="/login" state={{ from: location }} replace />
   }
 
 
