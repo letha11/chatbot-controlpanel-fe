@@ -33,7 +33,7 @@ type LoginFormValues = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const { isAuthenticated } = useAppSelector((state) => state.auth)
+  const { isAuthenticated, user } = useAppSelector((state) => state.auth)
   const dispatch = useAppDispatch()
   const [login, { isLoading }] = useLoginMutation()
 
@@ -48,7 +48,7 @@ export default function LoginPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard')
+      navigate('/dashboard', { replace: true })
     }
   }, [isAuthenticated, navigate])
 
@@ -63,8 +63,7 @@ export default function LoginPage() {
       } 
 
       toast.success('Login successful!')
-      // Navigation will be handled by the useEffect that watches isAuthenticated
-      // This ensures the Redux state has been updated before navigating
+      navigate('/dashboard', { replace: true })
     } catch (error) {
       const errorMessage = typeof error === 'string' 
         ? error 
