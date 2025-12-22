@@ -188,6 +188,21 @@ export const api = createApi({
       providesTags: ['Conversation'],
     }),
 
+    // Get all conversations across all users (admin / super_admin only)
+    getAllConversations: builder.query<
+      ApiResponse<{ conversations: Conversation[] }>,
+      { division_id?: string; limit?: number } | void
+    >({
+      query: (params) => {
+        const search = new URLSearchParams()
+        if (params?.division_id) search.set('division_id', params.division_id)
+        if (params?.limit) search.set('limit', String(params.limit))
+        const qs = search.toString()
+        return `/api/v1/conversations/all${qs ? `?${qs}` : ''}`
+      },
+      providesTags: ['Conversation'],
+    }),
+
     getConversationHistory: builder.query<ApiResponse<ConversationHistory>, { conversation_id: string; limit?: number }>({
       query: ({ conversation_id, limit }) => {
         const search = new URLSearchParams()
@@ -217,5 +232,6 @@ export const {
   useUpdateUserMutation,
   useDeleteUserMutation,
   useGetConversationsQuery,
+  useGetAllConversationsQuery,
   useGetConversationHistoryQuery,
 } = api

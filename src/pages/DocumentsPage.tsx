@@ -52,7 +52,8 @@ export default function DocumentsPage() {
 
   const [uploadOpen, setUploadOpen] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [isDragOver, setIsDragOver] = useState(false)
   const [uploadDivision, setUploadDivision] = useState<string>('')
   const [uploadDocument] = useUploadDocumentMutation()
   const [searchTerm, setSearchTerm] = useState<string>('')
@@ -80,22 +81,24 @@ export default function DocumentsPage() {
 
   const handleUpload = async () => {
     if (config.division_enabled) {
-      if (!selectedFile || !uploadDivision) {
-        toast.error('Please choose a file and division')
+      if (!selectedFiles.length || !uploadDivision) {
+        toast.error('Please choose at least one file and a division')
         return
       }
     } else {
-      if (!selectedFile) {
-        toast.error('Please choose a file')
+      if (!selectedFiles.length) {
+        toast.error('Please choose at least one file')
         return
       }
     }
     try {
       setUploading(true)
-      await uploadDocument({ file: selectedFile, division_id: uploadDivision }).unwrap()
-      toast.success('Document uploaded')
+      for (const file of selectedFiles) {
+        await uploadDocument({ file, division_id: uploadDivision }).unwrap()
+      }
+      toast.success(selectedFiles.length > 1 ? 'Documents uploaded' : 'Document uploaded')
       setUploadOpen(false)
-      setSelectedFile(null)
+      setSelectedFiles([])
       setUploadDivision('')
       refetch()
     } catch (err: unknown) {
@@ -331,8 +334,48 @@ export default function DocumentsPage() {
                 </div>
               )}
               <div className="space-y-2">
-                <Label htmlFor="file">File</Label>
-                <Input id="file" type="file" onChange={(e) => setSelectedFile(e.target.files?.[0] || null)} />
+                <Label htmlFor="file">File(s)</Label>
+                <div
+                  className={`flex flex-col items-center justify-center rounded-md border border-dashed px-4 py-8 text-center text-sm transition-colors ${
+                    isDragOver ? 'border-primary bg-primary/5' : 'border-input bg-background'
+                  }`}
+                  onDragOver={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    if (!uploading) setIsDragOver(true)
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setIsDragOver(false)
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    if (uploading) return
+                    const files = Array.from(e.dataTransfer.files || [])
+                    if (files.length) {
+                      setSelectedFiles(files)
+                    }
+                    setIsDragOver(false)
+                  }}
+                >
+                  <p className="mb-2">
+                    Drag and drop files here, or click to browse.
+                  </p>
+                  {selectedFiles.length > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      {selectedFiles.length} file{selectedFiles.length > 1 ? 's' : ''} selected
+                    </p>
+                  )}
+                  <Input
+                    id="file"
+                    type="file"
+                    multiple
+                    className="mt-4 cursor-pointer"
+                    onChange={(e) => setSelectedFiles(e.target.files ? Array.from(e.target.files) : [])}
+                  />
+                </div>
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setUploadOpen(false)}>Cancel</Button>
