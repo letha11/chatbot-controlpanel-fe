@@ -79,20 +79,35 @@ export const api = createApi({
     }),
 
     // Division CRUD operations
-    createDivision: builder.mutation<ApiResponse<Division>, Omit<Division, 'id' | 'created_at' | 'updated_at'>>({
-      query: (newDivision) => ({
-        url: '/api/v1/divisions',
-        method: 'POST',
-        body: newDivision,
-      }),
+    createDivision: builder.mutation<ApiResponse<Division>, { name: string; description?: string; is_active?: boolean; image?: File }>({
+      query: (newDivision) => {
+        const formData = new FormData()
+        formData.append('name', newDivision.name)
+        if (newDivision.description) formData.append('description', newDivision.description)
+        if (typeof newDivision.is_active === 'boolean') formData.append('is_active', String(newDivision.is_active))
+        if (newDivision.image) formData.append('image', newDivision.image)
+        return {
+          url: '/api/v1/divisions',
+          method: 'POST',
+          body: formData,
+        }
+      },
       invalidatesTags: ['Division'],
     }),
-    updateDivision: builder.mutation<ApiResponse<Division>, { id: string; data: Partial<Omit<Division, 'id' | 'created_at' | 'updated_at'>> }>({
-      query: ({ id, data }) => ({
-        url: `/api/v1/divisions/${id}`,
-        method: 'PUT',
-        body: data,
-      }),
+    updateDivision: builder.mutation<ApiResponse<Division>, { id: string; data: { name?: string; description?: string; is_active?: boolean; image?: File | null } }>({
+      query: ({ id, data }) => {
+        const formData = new FormData()
+        if (data.name) formData.append('name', data.name)
+        if (data.description !== undefined) formData.append('description', data.description)
+        if (typeof data.is_active === 'boolean') formData.append('is_active', String(data.is_active))
+        if (data.image) formData.append('image', data.image)
+        if (data.image === null) formData.append('remove_image', 'true')
+        return {
+          url: `/api/v1/divisions/${id}`,
+          method: 'PUT',
+          body: formData,
+        }
+      },
       invalidatesTags: ['Division'],
     }),
     deleteDivision: builder.mutation<ApiResponse, string>({

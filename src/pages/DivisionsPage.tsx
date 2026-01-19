@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { type ColumnDef } from '@tanstack/react-table'
-import { MoreHorizontal, Plus, Edit, Trash2 } from 'lucide-react'
+import { MoreHorizontal, Plus, Edit, Trash2, ImageIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -35,7 +35,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 import { DataTable } from '@/components/DataTable'
-import { DivisionForm } from '@/components/DivisionForm'
+import { DivisionForm, type DivisionFormSubmitData } from '@/components/DivisionForm'
 import {
   useGetDivisionsQuery,
   useCreateDivisionMutation,
@@ -43,6 +43,7 @@ import {
   useDeleteDivisionMutation,
 } from '@/store/api'
 import type { Division } from '@/types/entities'
+import { config } from '@/lib/environment'
 
 export default function DivisionsPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
@@ -56,9 +57,14 @@ export default function DivisionsPage() {
 
   const divisions = divisionsResponse?.data || []
 
-  const handleCreateDivision = async (data: { name: string; description?: string; is_active: boolean }) => {
+  const handleCreateDivision = async (data: DivisionFormSubmitData) => {
     try {
-      await createDivision(data).unwrap()
+      const { imageFile, removeImage, ...divisionData } = data
+      await createDivision({
+        ...divisionData,
+        image: imageFile || undefined,
+      }).unwrap()
+      
       toast.success('Division created successfully')
       setCreateDialogOpen(false)
     } catch (error: any) {
@@ -66,11 +72,19 @@ export default function DivisionsPage() {
     }
   }
 
-  const handleUpdateDivision = async (data: { name: string; description?: string; is_active: boolean }) => {
+  const handleUpdateDivision = async (data: DivisionFormSubmitData) => {
     if (!editingDivision) return
     
     try {
-      await updateDivision({ id: editingDivision.id, data }).unwrap()
+      const { imageFile, removeImage, ...divisionData } = data
+      await updateDivision({
+        id: editingDivision.id,
+        data: {
+          ...divisionData,
+          image: removeImage ? null : (imageFile || undefined),
+        },
+      }).unwrap()
+      
       toast.success('Division updated successfully')
       setEditDialogOpen(false)
       setEditingDivision(null)
@@ -94,6 +108,25 @@ export default function DivisionsPage() {
   }
 
   const columns: ColumnDef<Division>[] = [
+    {
+      id: 'image',
+      header: 'Image',
+      cell: ({ row }) => {
+        const division = row.original
+        const placeholder = (
+          <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center">
+            <ImageIcon className="h-5 w-5 text-muted-foreground" />
+          </div>
+        )
+        return division.image_path ? (
+          <img
+            src={`${config.apiBaseUrl}/api/v1/divisions/${division.id}/image?t=${new Date(division.updated_at).getTime()}`}
+            alt={division.name}
+            className="h-10 w-10 rounded-md object-cover"
+          />
+        ) : placeholder
+      },
+    },
     {
       accessorKey: 'name',
       header: 'Name',

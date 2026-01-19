@@ -2,6 +2,7 @@ export interface Division {
   id: string
   name: string
   description?: string
+  image_path?: string
   is_active: boolean
   created_at: string
   updated_at: string
