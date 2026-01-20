@@ -218,13 +218,13 @@ export default function DashboardPage() {
       </div>
 
       {/* Charts grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Documents per division - Donut chart */}
         <Card>
           <CardHeader>
             <CardTitle>Documents per Division</CardTitle>
           </CardHeader>
-          <CardContent className="h-72">
+          <CardContent className="h-100">
             {isLoading ? (
               <div className="flex h-full items-center justify-center text-muted-foreground">
                 Loading…
@@ -264,7 +264,7 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle>Documents by Division (Active vs Inactive)</CardTitle>
           </CardHeader>
-          <CardContent className="h-72">
+          <CardContent className="h-100">
             {isLoading ? (
               <div className="flex h-full items-center justify-center text-muted-foreground">
                 Loading…
@@ -278,11 +278,12 @@ export default function DashboardPage() {
                 <BarChart
                   data={divisionActivity}
                   margin={{ top: 16, right: 16, left: 0, bottom: 40 }}
+                  style={{ fontSize: '12px' }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis
                     dataKey="divisionName"
-                    angle={-30}
+                    angle={-10}
                     textAnchor="end"
                     interval={0}
                     height={60}
@@ -303,7 +304,7 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle>Documents Over Time</CardTitle>
           </CardHeader>
-          <CardContent className="h-72">
+          <CardContent className="h-100">
             {isLoading ? (
               <div className="flex h-full items-center justify-center text-muted-foreground">
                 Loading…
@@ -347,7 +348,7 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle>Chat Activity by Division</CardTitle>
           </CardHeader>
-          <CardContent className="h-72">
+          <CardContent className="h-100">
             {isLoading ? (
               <div className="flex h-full items-center justify-center text-muted-foreground">
                 Loading…
@@ -362,6 +363,7 @@ export default function DashboardPage() {
                   data={chatByDivision}
                   layout="vertical"
                   margin={{ top: 16, right: 16, left: 80, bottom: 16 }}
+                  style={{ fontSize: '12px' }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis type="number" allowDecimals={false} />
